@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Passing Grade Viewer Premium</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen flex items-center justify-center">
+
+<div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-2">
+  <h1 class="text-2xl font-bold text-center mb-6 text-blue-700">📊 Passing Grade Viewer</h1>
+
+  <div class="mb-4">
+    <label for="divisi" class="font-semibold block mb-2">Pilih Divisi:</label>
+    <select id="divisi" class="w-full p-3 border rounded-lg"></select>
+  </div>
+
+  <div class="mb-6">
+    <label for="nama" class="font-semibold block mb-2">Pilih Nama:</label>
+    <select id="nama" class="w-full p-3 border rounded-lg" disabled></select>
+  </div>
+
+  <div id="tabel" class="mt-4"></div>
+</div>
+
+<script>
+const apiUrl = "https://script.google.com/macros/s/AKfycbz1fFp7vc8yy3zMDPoTVGvrKVhWXAztWbnmlVa5sIbwowd5wkEfnC1UWUxKLPasJipn/exec"; // Ganti dengan URL API kamu
+let allData = {};
+
+async function fetchData() {
+  const res = await fetch(apiUrl);
+  allData = await res.json();
+
+  const divisiSelect = document.getElementById("divisi");
+  divisiSelect.innerHTML = '<option value="">-- Pilih Divisi --</option>';
+  Object.keys(allData).forEach(div => {
+    divisiSelect.innerHTML += `<option value="${div}">${div}</option>`;
+  });
+}
+
+document.getElementById("divisi").addEventListener("change", () => {
+  const divisi = document.getElementById("divisi").value;
+  const namaSelect = document.getElementById("nama");
+  namaSelect.innerHTML = '<option value="">-- Pilih Nama --</option>';
+  if (divisi) {
+    Object.keys(allData[divisi]).sort().forEach(nama => {
+      namaSelect.innerHTML += `<option value="${nama}">${nama}</option>`;
+    });
+    namaSelect.disabled = false;
+  } else {
+    namaSelect.disabled = true;
+  }
+});
+
+document.getElementById("nama").addEventListener("change", () => {
+  const divisi = document.getElementById("divisi").value;
+  const nama = document.getElementById("nama").value;
+  if (!divisi || !nama) return;
+
+  const record = allData[divisi][nama];
+  let html = `
+    <table class="w-full text-sm text-center border">
+      <thead><tr class="bg-blue-100"><th>Poin</th><th>1 Bulan</th><th>2 Bulan</th><th>3 Bulan</th></tr></thead>
+      <tbody>
+        <tr><td>Kedisiplinan</td><td>${record["1 Bulan"][0]}</td><td>${record["2 Bulan"][0]}</td><td>${record["3 Bulan"][0]}</td></tr>
+        <tr><td>Aturan</td><td>${record["1 Bulan"][1]}</td><td>${record["2 Bulan"][1]}</td><td>${record["3 Bulan"][1]}</td></tr>
+        <tr><td>Etika</td><td>${record["1 Bulan"][2]}</td><td>${record["2 Bulan"][2]}</td><td>${record["3 Bulan"][2]}</td></tr>
+        <tr class="font-bold"><td>Total</td><td>${record["1 Bulan"][3]}</td><td>${record["2 Bulan"][3]}</td><td>${record["3 Bulan"][3]}</td></tr>
+      </tbody>
+    </table>`;
+  document.getElementById("tabel").innerHTML = html;
+});
+
+fetchData();
+</script>
+
+</body>
+</html>
